@@ -2787,6 +2787,8 @@ char **argv;            /* command line tokens */
         case o_DF:  /* Create a difference archive */
           diff_mode = 1;
           allow_empty_archive = 1;
+          diff_time = atoll(getenv("DIFF_TIME"));
+          diff_time = unix2dostime(&diff_time);
           break;
         case 'e':   /* Encrypt */
 #if !CRYPT
@@ -4372,13 +4374,20 @@ char **argv;            /* command line tokens */
             fprintf(logfile, "zip diagnostic: %s %s\n", z->oname,
                    z->trash ? "up to date" : "missing or early");
         }
-        else if (diff_mode && tf == z->tim &&
-                 ((isdirname && (zoff_t)usize == -1) || (usize == z->len))) {
+        else if (diff_mode && (
+                    (strlen(z->name) > 4 && strcmp(".iso", (z->name + strlen(z->name) - 4)) == 0) ||
+                    (tf <= diff_time /*z->tim*/ && ((isdirname && (zoff_t)usize == -1) || (usize == z->len))))) {
           /* if in diff mode only include if file time or size changed */
           /* usize is -1 for directories */
           z->mark = 0;
         }
         else {
+          if (diff_mode) {
+              printf("changed: %s, time(%s) %lu vs %lu, size(%s) %llu vs %llu\n", z->name,
+                     tf <= diff_time ? "same" : "changed", tf, diff_time,
+                     (isdirname && (zoff_t)usize == -1) || (usize == z->len) ? "same" : "changed",
+                     usize, z->len);
+          }
           /* usize is -1 for directories and -2 for devices */
           if (tf == z->tim &&
               ((z->len == 0 && (zoff_t)usize == -1)

@@ -431,6 +431,7 @@ extern int volume_label;        /* add volume label */
 extern int dirnames;            /* include directory names */
 extern int filter_match_case;   /* 1=match case when filter() */
 extern int diff_mode;           /* 1=require --out and only store changed and add */
+extern long diff_time;
 #if defined(WIN32)
 extern int only_archive_set;    /* only include if DOS archive bit set */
 extern int clear_archive_bits;   /* clear DOS archive bit of included files */
